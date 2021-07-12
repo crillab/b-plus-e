@@ -8,7 +8,7 @@ make
 ```
 
 
-# How to glucose
+# How to use
 
 
 Please use the help to get information about the way of running it.
