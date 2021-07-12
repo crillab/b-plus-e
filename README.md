@@ -1,4 +1,4 @@
-**B+E** is built upon glucose 3.0.
+**B+E** is built upon glucose 3.0 (MIT Licence).
 
 # How to compile
 
