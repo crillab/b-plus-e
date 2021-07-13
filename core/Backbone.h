@@ -24,6 +24,8 @@
 #define GLUCOSE_SOLVER_BACKBONE
 
 #include <cstring>
+#include "core/SolverTypes.h"
+#include "core/Solver.h"
 
 namespace Glucose {
 class Backbone {

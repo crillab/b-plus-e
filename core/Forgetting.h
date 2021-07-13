@@ -27,6 +27,9 @@
 #include <iostream>
 
 #include "core/Utils.h"
+#include "core/SolverTypes.h"
+#include "core/Solver.h"
+#include "core/GatesDetection.h"
 
 using namespace std;
 
