@@ -428,8 +428,7 @@ void appliedPreproc(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
 // Main:
 
 int main(int argc, char **argv) {
-  printf("c\nc This is glucose 3.0 --  based on MiniSAT (Many thanks to "
-         "MiniSAT team)\nc\n");
+  printf("c\nc This is B+E 1.0 -- based on glucose 3.0\nc\n");
   try {
     setUsageHelp("c USAGE: %s [options] <input-file> <result-output-file>\n\n "
                  "where input may be either in plain or gzipped DIMACS.\n");
