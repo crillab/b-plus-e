@@ -26,7 +26,10 @@
 #include "mtl/Sort.h"
 #include <iostream>
 
+#include "SolverTypes.h"
+#include "Solver.h"
 #include "core/Utils.h"
+#include "GatesDetection.h"
 
 using namespace std;
 

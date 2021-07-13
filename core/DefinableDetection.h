@@ -24,6 +24,9 @@
 #define GLUCOSE_SOLVER_DEFINABLE_DETECTION
 
 #include <cstring>
+#include "mtl/Vec.h"
+#include "SolverTypes.h"
+#include "Solver.h"
 
 namespace Glucose {
 class DefinableDetection {

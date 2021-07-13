@@ -25,6 +25,8 @@
 
 #include <cstring>
 
+#include "Solver.h"
+
 namespace Glucose {
 class Backbone {
 public:
