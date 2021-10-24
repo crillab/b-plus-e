@@ -23,10 +23,10 @@
 #ifndef GLUCOSE_SOLVER_DEFINABLE_DETECTION
 #define GLUCOSE_SOLVER_DEFINABLE_DETECTION
 
-#include <cstring>
-#include "mtl/Vec.h"
-#include "SolverTypes.h"
 #include "Solver.h"
+#include "SolverTypes.h"
+#include "mtl/Vec.h"
+#include <cstring>
 
 namespace Glucose {
 class DefinableDetection {
@@ -95,7 +95,7 @@ public:
   void computeBackBone(Solver &solver, vec<lbool> &currentModel);
   void collectBiPartition(vec<vec<Lit>> &cls, int nbV, vec<Var> &i, vec<Var> &o,
                           int nbConfl, const char *defSort, vec<vec<Lit>> &g,
-                          vec<Var> &protectedVar);
+                          vec<Var> &inputVar, vec<Var> &outputVar);
 };
 } // namespace Glucose
 

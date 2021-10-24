@@ -78,7 +78,7 @@ template <class B> static void readClause(B &in, vec<Lit> &lits, int &maxIdx) {
 template <class B>
 static void parse_DIMACS_main(B &in, vec<vec<Lit>> &cls,
                               vec<QuantifBlock> &listQuantif, int &maxIdx,
-                              vec<Var> &protectedVar) {
+                              vec<Var> &inputVar, vec<Var> &outputVar) {
   vec<Lit> lits;
   int cnt = 0, vars = 0, clauses = 0;
   for (;;) {
@@ -112,14 +112,19 @@ static void parse_DIMACS_main(B &in, vec<vec<Lit>> &cls,
       ++in;
       if (*in == ' ') {
         ++in;
-        if (*in == 't') {
+        char save = *in;
+        if (save == 'i' || save == 'o') {
           ++in;
           int parsed_lit;
           for (;;) {
             parsed_lit = parseInt(in);
             if (parsed_lit == 0)
               break;
-            protectedVar.push(abs(parsed_lit) - 1);
+
+            if (save == 'i')
+              inputVar.push(abs(parsed_lit) - 1);
+            else
+              outputVar.push(abs(parsed_lit) - 1);
           }
         } else
           skipLine(in);
@@ -144,11 +149,11 @@ static void parse_DIMACS_main(B &in, vec<vec<Lit>> &cls,
 
 // Inserts problem into solver.
 static int parse_DIMACS(gzFile input_stream, vec<vec<Lit>> &cls,
-                        vec<QuantifBlock> &listQuantif,
-                        vec<Var> &protectedVar) {
+                        vec<QuantifBlock> &listQuantif, vec<Var> &inputVar,
+                        vec<Var> &outputVar) {
   StreamBuffer in(input_stream);
   int maxIdx = 0;
-  parse_DIMACS_main(in, cls, listQuantif, maxIdx, protectedVar);
+  parse_DIMACS_main(in, cls, listQuantif, maxIdx, inputVar, outputVar);
   return maxIdx;
 }
 } // namespace Glucose

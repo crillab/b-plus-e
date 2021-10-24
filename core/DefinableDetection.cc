@@ -270,8 +270,7 @@ void DefinableDetection::constructive(Solver &solver, vec<Lit> &assums,
 
       if (!definable)
         definable = (solver.solveLimited(assums, limitC) == l_False);
-      else
-        assert(solver.solveLimited(assums, limitC) == l_False);
+
       assums.pop();
       assums.pop();
     }
@@ -310,7 +309,8 @@ void DefinableDetection::collectBiPartition(vec<vec<Lit>> &cls, int nbVar,
                                             vec<Var> &i, vec<Var> &o,
                                             int limitC, const char *defSort,
                                             vec<vec<Lit>> &gates,
-                                            vec<Var> &protectedVar) {
+                                            vec<Var> &inputVar,
+                                            vec<Var> &outputVar) {
   printf("c\nc \033[33mCollect Bi-Partition Procedure\033[0m\n");
   double collectBiPartition_time = cpuTime();
   vec<Lit> selectors, assums;
@@ -328,8 +328,8 @@ void DefinableDetection::collectBiPartition(vec<vec<Lit>> &cls, int nbVar,
     solver.newVar();
   }
 
-  for (int i = 0; i < protectedVar.size(); i++)
-    isProtected[protectedVar[i]] = true;
+  for (int i = 0; i < inputVar.size(); i++)
+    isProtected[inputVar[i]] = true;
   for (int i = 0; i < cls.size(); i++)
     solver.addClause_(cls[i]);
 
@@ -354,6 +354,18 @@ void DefinableDetection::collectBiPartition(vec<vec<Lit>> &cls, int nbVar,
     sortSelectorsTautologyGeneration(solver, selectors, nbVar, assums, cls);
   printf("c Time to sort the selector: %lf\n",
          cpuTime() - collectBiPartition_time);
+
+  // put the output variables in the output vector.
+  vec<bool> mark(nbVar + 2, false);
+  for (int i = 0; i < outputVar.size(); i++)
+    mark[outputVar[i]] = true;
+
+  int pi, pj;
+  for (pi = pj = 0; pi < assums.size(); pi++) {
+    if (!mark[var(assums[pi]) - (nbVar << 1)])
+      assums[pj++] = assums[pi];
+  }
+  assums.shrink(pi - pj);
 
   // here we compute the definable bi-partition
   constructive(solver, assums, nbVar, i, o, limitC, gates);

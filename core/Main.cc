@@ -195,7 +195,7 @@ void rebuiltClauses(Solver &S, vec<vec<Lit>> &clauses) {
 
 void appliedB(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
               StringOption &definabilitySort, StringOption &outPutFile,
-              bool useGates, vec<Var> &protectedVar) {
+              bool useGates, vec<Var> &inputVar, vec<Var> &outputVar) {
   Solver S;
   while (S.nVars() < nbVar)
     S.newVar();
@@ -212,9 +212,9 @@ void appliedB(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
 
   // collect gates (if option is activated)
   vec<vec<Lit>> gates;
-  if (useGates) {
+  if (useGates && !outputVar.size()) {
     GatesDetection gd(S);
-    gd.collectGates(S, gates, protectedVar);
+    gd.collectGates(S, gates, inputVar);
   }
 
   // we compute a bi-partition
@@ -223,7 +223,7 @@ void appliedB(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
   vec<Var> input, output;
   DefinableDetection fDec;
   fDec.collectBiPartition(clauses, nbVar, input, output, lim_solver,
-                          definabilitySort, gates, protectedVar);
+                          definabilitySort, gates, inputVar, outputVar);
 
   FILE *out = fopen(outPutFile, "a");
   fprintf(out, "v ");
@@ -241,7 +241,8 @@ void appliedB(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
    forget are given
  */
 void appliedE(vec<vec<Lit>> &clauses, int nbVar, int lim_occ,
-              StringOption &inPutFile, bool useGates, vec<Var> &protectedVar) {
+              StringOption &inPutFile, bool useGates, vec<Var> &inputVar,
+              vec<Var> &outputVar) {
   Solver S;
   while (S.nVars() < nbVar)
     S.newVar();
@@ -250,9 +251,9 @@ void appliedE(vec<vec<Lit>> &clauses, int nbVar, int lim_occ,
 
   // collect gates (if option is activated)
   vec<vec<Lit>> gates;
-  if (useGates) {
+  if (useGates && !outputVar.size()) {
     GatesDetection gd(S);
-    gd.collectGates(S, gates, protectedVar);
+    gd.collectGates(S, gates, inputVar);
   }
 
   Forgetting fo(S);
@@ -367,7 +368,7 @@ inline void showInstanceAfterPreproc(vec<vec<Lit>> &clauses,
  */
 void appliedPreproc(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
                     StringOption &definabilitySort, int lim_occ, bool useGates,
-                    vec<Var> &protectedVar) {
+                    vec<Var> &inputVar, vec<Var> &outputVar) {
   Solver S;
   while (S.nVars() < nbVar)
     S.newVar();
@@ -384,9 +385,9 @@ void appliedPreproc(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
 
   // collect gates (if the option is activated)
   vec<vec<Lit>> gates, defGates;
-  if (useGates) {
+  if (useGates && !outputVar.size()) {
     GatesDetection gd(S);
-    gd.collectGates(S, gates, protectedVar);
+    gd.collectGates(S, gates, inputVar);
     for (int i = 0; i < gates.size(); i++) {
       defGates.push();
       gates[i].copyTo(defGates.last());
@@ -399,19 +400,11 @@ void appliedPreproc(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
   vec<Var> inputVars, outVars, forgetVariables;
   DefinableDetection fDec;
   fDec.collectBiPartition(clauses, nbVar, inputVars, outVars, lim_solver,
-                          definabilitySort, defGates, protectedVar);
+                          definabilitySort, defGates, inputVar, outputVar);
   vec<Lit> &unit = fDec.getUnitLit();
   for (int i = 0; i < unit.size(); i++)
     if (S.value(unit[i]) == l_Undef)
       S.uncheckedEnqueue(unit[i]);
-
-  // debug
-  for (int i = 0; i < outVars.size(); i++)
-    for (int j = 0; j < protectedVar.size(); j++)
-      if (outVars[i] == protectedVar[j]) {
-        fprintf(stderr, "Erreur, I removed a protected variables oO\n");
-        exit(7);
-      }
 
   // we forget output variables
   Forgetting fo(S);
@@ -486,24 +479,35 @@ int main(int argc, char **argv) {
     int nbVar = 0;
     double initial_time = cpuTime();
     vec<QuantifBlock> listQuantif;
-    vec<Var> protectedVar;
+
+    vec<Var> inputVar, outputVar;
 
     vec<vec<Lit>> clauses;
-    nbVar = parse_DIMACS(in, clauses, listQuantif, protectedVar);
+    nbVar = parse_DIMACS(in, clauses, listQuantif, inputVar, outputVar);
     gzclose(in);
 
     double parsed_time = cpuTime();
     if (verb)
       printf("c Parse time (seconds): %12.2f\nc\n", parsed_time - initial_time);
 
-    if (onlyB != "/dev/null")
+    printf("c Input var forced: ");
+    for (int i = 0; i < inputVar.size(); i++)
+      printf("%d ", inputVar[i] + 1);
+    printf("\n");
+
+    printf("c Output var forced: ");
+    for (int i = 0; i < outputVar.size(); i++)
+      printf("%d ", outputVar[i] + 1);
+    printf("\n");
+
+    if (strcmp(onlyB, "/dev/null"))
       appliedB(clauses, nbVar, lim_solver, definabilitySort, onlyB, useGates,
-               protectedVar);
-    else if (onlyE != "/dev/null")
-      appliedE(clauses, nbVar, lim_occ, onlyE, useGates, protectedVar);
+               inputVar, outputVar);
+    else if (strcmp(onlyE, "/dev/null"))
+      appliedE(clauses, nbVar, lim_occ, onlyE, useGates, inputVar, outputVar);
     else if (callPreproc)
       appliedPreproc(clauses, nbVar, lim_solver, definabilitySort, lim_occ,
-                     useGates, protectedVar);
+                     useGates, inputVar, outputVar);
     else
       return satOracle(clauses, nbVar, mod, verb, vv);
 
