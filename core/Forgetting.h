@@ -26,10 +26,10 @@
 #include "mtl/Sort.h"
 #include <iostream>
 
-#include "SolverTypes.h"
-#include "Solver.h"
-#include "core/Utils.h"
 #include "GatesDetection.h"
+#include "Solver.h"
+#include "SolverTypes.h"
+#include "core/Utils.h"
 
 using namespace std;
 
@@ -284,7 +284,7 @@ public:
   }
 
   int runForgetting(vec<Var> &outputVars, vec<Var> &forgetVar, int lim_occ,
-                    vec<vec<Lit>> &gates, bool useGate);
+                    vec<vec<Lit>> &gates, bool useGate, bool printForget);
 };
 } // namespace Glucose
 

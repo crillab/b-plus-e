@@ -242,7 +242,7 @@ void appliedB(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
  */
 void appliedE(vec<vec<Lit>> &clauses, int nbVar, int lim_occ,
               StringOption &inPutFile, bool useGates, vec<Var> &inputVar,
-              vec<Var> &outputVar) {
+              vec<Var> &outputVar, bool printForget) {
   Solver S;
   while (S.nVars() < nbVar)
     S.newVar();
@@ -297,7 +297,8 @@ void appliedE(vec<vec<Lit>> &clauses, int nbVar, int lim_occ,
 
   fclose(inFile);
 
-  fo.runForgetting(outVars, forgetVariables, lim_occ, gates, useGates);
+  fo.runForgetting(outVars, forgetVariables, lim_occ, gates, useGates,
+                   printForget);
 
   printf("p cnf %d %d\n", S.nVars(),
          S.clauses.size() + S.trail.size() + forgetVariables.size());
@@ -368,7 +369,7 @@ inline void showInstanceAfterPreproc(vec<vec<Lit>> &clauses,
  */
 void appliedPreproc(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
                     StringOption &definabilitySort, int lim_occ, bool useGates,
-                    vec<Var> &inputVar, vec<Var> &outputVar) {
+                    vec<Var> &inputVar, vec<Var> &outputVar, bool printForget) {
   Solver S;
   while (S.nVars() < nbVar)
     S.newVar();
@@ -408,7 +409,8 @@ void appliedPreproc(vec<vec<Lit>> &clauses, int nbVar, int lim_solver,
 
   // we forget output variables
   Forgetting fo(S);
-  fo.runForgetting(outVars, forgetVariables, lim_occ, gates, useGates);
+  fo.runForgetting(outVars, forgetVariables, lim_occ, gates, useGates,
+                   printForget);
 
   vec<vec<Lit>> reduceClauses;
   S.computeSimplifiedFormula(reduceClauses);
@@ -440,6 +442,9 @@ int main(int argc, char **argv) {
                    "Verbosity level (0=silent, 1=some, 2=more).", 1,
                    IntRange(0, 2));
     BoolOption mod("MAIN", "model", "show model.", false);
+    BoolOption printForget("MAIN", "print-forget",
+                           "display the variables that have been forgot.",
+                           false);
     IntOption vv("MAIN", "vv", "Verbosity every vv conflicts", 10000,
                  IntRange(1, INT32_MAX));
     IntOption lim_solver(
@@ -504,10 +509,11 @@ int main(int argc, char **argv) {
       appliedB(clauses, nbVar, lim_solver, definabilitySort, onlyB, useGates,
                inputVar, outputVar);
     else if (strcmp(onlyE, "/dev/null"))
-      appliedE(clauses, nbVar, lim_occ, onlyE, useGates, inputVar, outputVar);
+      appliedE(clauses, nbVar, lim_occ, onlyE, useGates, inputVar, outputVar,
+               printForget);
     else if (callPreproc)
       appliedPreproc(clauses, nbVar, lim_solver, definabilitySort, lim_occ,
-                     useGates, inputVar, outputVar);
+                     useGates, inputVar, outputVar, printForget);
     else
       return satOracle(clauses, nbVar, mod, verb, vv);
 

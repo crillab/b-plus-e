@@ -21,6 +21,7 @@
  */
 
 #include <iostream>
+#include <utility>
 
 #include "core/Forgetting.h"
 #include "core/GatesDetection.h"
@@ -889,8 +890,8 @@ void Forgetting::replaceVarByOrGate(vec<Lit> &g) {
    \return the number of variable removed during all the process
  */
 int Forgetting::runForgetting(vec<Var> &outputVars, vec<Var> &forgetVars,
-                              int lim_occ, vec<vec<Lit>> &gates,
-                              bool useGates) {
+                              int lim_occ, vec<vec<Lit>> &gates, bool useGates,
+                              bool printForget) {
   GatesDetection gd(solver);
 
   for (int i = 0; i < solver.learnts.size(); i++)
@@ -994,6 +995,13 @@ int Forgetting::runForgetting(vec<Var> &outputVars, vec<Var> &forgetVars,
     if (!mustBeRm[i])
       refClauses[j++] = refClauses[i];
   refClauses.shrink(i - j);
+
+  if (printForget) {
+    printf("e ");
+    for (int i = 0; i < forgetVars.size(); i++)
+      printf("%d ", forgetVars[i] + 1);
+    printf("0\n");
+  }
 
   printf("c Number of variables forgotten: %d\n", forgetVars.size());
   printf("c Number of iterations: %d\n", nbIteration);
